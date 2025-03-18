@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressBookService {
@@ -14,14 +15,11 @@ public class AddressBookService {
     private int idCounter = 1;
 
     public List<AddressBook> getAllContacts() {
-        return contacts;
+        return new ArrayList<>(contacts);
     }
 
-    public AddressBook getContactById(int id) {
-        return contacts.stream()
-                .filter(contact -> contact.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public Optional<AddressBook> getContactById(int id) {
+        return contacts.stream().filter(contact -> contact.getId() == id).findFirst();
     }
 
     public AddressBook createContact(AddressBookDTO dto) {
@@ -30,16 +28,13 @@ public class AddressBookService {
         return contact;
     }
 
-    public AddressBook updateContact(int id, AddressBookDTO dto) {
-        for (AddressBook contact : contacts) {
-            if (contact.getId() == id) {
-                contact.setName(dto.getName());
-                contact.setEmail(dto.getEmail());
-                contact.setPhoneNumber(dto.getPhoneNumber());
-                return contact;
-            }
-        }
-        return null;
+    public Optional<AddressBook> updateContact(int id, AddressBookDTO dto) {
+        return getContactById(id).map(contact -> {
+            contact.setName(dto.getName());
+            contact.setEmail(dto.getEmail());
+            contact.setPhoneNumber(dto.getPhoneNumber());
+            return contact;
+        });
     }
 
     public boolean deleteContact(int id) {

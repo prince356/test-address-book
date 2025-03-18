@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/addressbook")
@@ -25,8 +26,8 @@ public class AddressBookController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AddressBook> getContactById(@PathVariable int id) {
-        AddressBook contact = addressBookService.getContactById(id);
-        return (contact != null) ? ResponseEntity.ok(contact) : ResponseEntity.notFound().build();
+        Optional<AddressBook> contact = addressBookService.getContactById(id);
+        return contact.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -36,8 +37,8 @@ public class AddressBookController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AddressBook> updateContact(@PathVariable int id, @RequestBody AddressBookDTO dto) {
-        AddressBook updatedContact = addressBookService.updateContact(id, dto);
-        return (updatedContact != null) ? ResponseEntity.ok(updatedContact) : ResponseEntity.notFound().build();
+        Optional<AddressBook> updatedContact = addressBookService.updateContact(id, dto);
+        return updatedContact.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
