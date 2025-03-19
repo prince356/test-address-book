@@ -47,4 +47,9 @@ public class AddressBookController {
         boolean deleted = addressBookService.deleteContact(id);
         return deleted ? ResponseEntity.ok("Contact deleted successfully") : ResponseEntity.notFound().build();
     }
+    @GetMapping("/email/{email}")
+    public ResponseEntity<AddressBook> getContactByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(addressBookService.getContactByEmail(email));
+    }
+
 }

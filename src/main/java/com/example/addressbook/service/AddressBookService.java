@@ -49,4 +49,9 @@ public class AddressBookService {
         repository.delete(contact);
         log.info("Deleted contact with ID: {}", id);
     }
+    public AddressBook getContactByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Contact with email " + email + " not found"));
+    }
+
 }
