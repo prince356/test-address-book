@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.example.addressbook.exception.ResourceNotFoundException;
 
 @Slf4j
 @Service
@@ -47,5 +48,11 @@ public class AddressBookService {
     public boolean deleteContact(int id) {
         log.info("Deleting contact with ID: {}", id);
         return contacts.removeIf(contact -> contact.getId() == id);
+    }
+    public Optional<AddressBook> getContactById(int id) {
+        return contacts.stream()
+                .filter(contact -> contact.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Contact with ID " + id + " not found"));
     }
 }
