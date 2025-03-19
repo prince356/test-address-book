@@ -1,58 +1,52 @@
 package com.example.addressbook.service;
 
 import com.example.addressbook.dto.AddressBookDTO;
+import com.example.addressbook.exception.ResourceNotFoundException;
 import com.example.addressbook.model.AddressBook;
+import com.example.addressbook.repository.AddressBookRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import com.example.addressbook.exception.ResourceNotFoundException;
 
 @Slf4j
 @Service
 public class AddressBookService {
 
-    private final List<AddressBook> contacts = new ArrayList<>();
-    private int idCounter = 1;
+    private final AddressBookRepository repository;
 
-    public List<AddressBook> getAllContacts() {
-        log.info("Fetching all contacts...");
-        return new ArrayList<>(contacts);
+    public AddressBookService(AddressBookRepository repository) {
+        this.repository = repository;
     }
 
-    public Optional<AddressBook> getContactById(int id) {
-        log.info("Fetching contact with ID: {}", id);
-        return contacts.stream().filter(contact -> contact.getId() == id).findFirst();
+    public List<AddressBook> getAllContacts() {
+        log.info("Fetching all contacts from database...");
+        return repository.findAll();
+    }
+
+    public AddressBook getContactById(int id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contact with ID " + id + " not found"));
     }
 
     public AddressBook createContact(AddressBookDTO dto) {
-        AddressBook contact = new AddressBook(idCounter++, dto.getName(), dto.getEmail(), dto.getPhoneNumber());
-        contacts.add(contact);
-        log.info("Created new contact: {}", contact);
-        return contact;
+        AddressBook contact = new AddressBook(0, dto.getName(), dto.getEmail(), dto.getPhoneNumber());
+        log.info("Saving new contact: {}", contact);
+        return repository.save(contact);
     }
 
-    public Optional<AddressBook> updateContact(int id, AddressBookDTO dto) {
-        log.info("Updating contact with ID: {}", id);
-        return getContactById(id).map(contact -> {
-            contact.setName(dto.getName());
-            contact.setEmail(dto.getEmail());
-            contact.setPhoneNumber(dto.getPhoneNumber());
-            log.info("Updated contact: {}", contact);
-            return contact;
-        });
+    public AddressBook updateContact(int id, AddressBookDTO dto) {
+        AddressBook contact = getContactById(id);
+        contact.setName(dto.getName());
+        contact.setEmail(dto.getEmail());
+        contact.setPhoneNumber(dto.getPhoneNumber());
+        log.info("Updating contact: {}", contact);
+        return repository.save(contact);
     }
 
-    public boolean deleteContact(int id) {
-        log.info("Deleting contact with ID: {}", id);
-        return contacts.removeIf(contact -> contact.getId() == id);
-    }
-    public Optional<AddressBook> getContactById(int id) {
-        return contacts.stream()
-                .filter(contact -> contact.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Contact with ID " + id + " not found"));
+    public void deleteContact(int id) {
+        AddressBook contact = getContactById(id);
+        repository.delete(contact);
+        log.info("Deleted contact with ID: {}", id);
     }
 }
